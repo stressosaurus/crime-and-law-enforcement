@@ -1,0 +1,236 @@
+---
+title: "An Analysis of The Use of Force by U.S. Law Enforcement Agencies"
+subtitle: "Summer 2022 Research: Report 1"
+author: "Sajid Bin Mahamud"
+header-includes:
+    - \usepackage{setspace}
+output:
+  bookdown::pdf_document2: 
+    number_sections: true
+    toc: true
+  bookdown::html_notebook2: 
+    number_sections: true
+urlcolor: blue 
+bibliography: references.bib
+nocite: '@*'
+csl: apa.csl
+link-citations: yes
+linkcolor: blue
+---
+
+```{r settings, echo=FALSE, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(dplyr)
+library(kableExtra)
+library(tidyverse)
+library(kableExtra)
+
+```
+
+```{r data, include=FALSE, message=FALSE, warning=FALSE}
+
+##fatal shooting data
+
+mpvData <- read_csv("~/Police Violence in the U.S./police-violence-study/Datasets/mpv.csv")
+
+#keeping relevant variables
+
+mpvData <- mpvData %>% select(name ,age, race, city, state,zip,county,agency_responsible, date, day, month, year, cause_of_death, allegedly_armed, wapo_armed, wapo_flee, geography, encounter_type, initial_reason, latitude, longitude, tract, congressional_district_113, wapo_id, mpv_id, fe_id)
+mpvPeryear <- mpvData %>% group_by(year) %>% summarise("Total Deaths Per Year" = n()) 
+
+##crimes in the U.S. data
+
+offenses2013 <- read_csv("~/Police Violence in the U.S./police-violence-study/reports/report1/Offenses2013byState_city.csv")
+
+##wapo national police shooting database
+wapoData <- read.csv("~/Police Violence in the U.S./police-violence-study/Datasets/wapoComplete.csv")
+
+##LEOKA data
+
+LEOKilled2013 <- read.csv("~/Police Violence in the U.S./police-violence-study/reports/report1/OfficersKilled2013.csv")
+
+```
+
+\newpage
+
+*Last Update: `r format(Sys.time(), '%B %d, %Y')`*
+
+# Introduction
+
+\doublespacing Every year, over a thousand people lose their lives at the hands of law enforcement officials (See Table \@ref(tab:yearTable)). Approximately 2 out of 100,000 men between the age of 25 and 29 are estimated to die due to deliberate use of force by the police, making it one of the leading causes of death for young men in the United States (U.S). Moreover, young men of color face an exceptionally high risk of being killed by police, with black men facing the risk of getting killed by police at a rate between 2.8 and 4.1 per 100,000 [@Edwards2019].
+
+\singlespacing
+
+```{r yearTable, echo=FALSE}
+knitr::kable(mpvPeryear[1:9,1:2], col.names = c("Year", "Total Deaths"), caption = "Deaths at the hands of law enforcement, United States (Sinyangwe et al., 2021)") %>% kable_styling(latex_options = "HOLD_position")
+```
+
+\doublespacing In recent years, the killings of Amir Locke (22), Eric Garner (43), George Floyd (46), Laquan McDonald (17), Michael Brown (18), Oscar Grant (22), Tamir Rice (12), and Walter Scott (50) among other African American Civilians, were followed by unprecedented public outrage against police violence [@Taylor2016]. The public outrage following the protests have brought sustained national attention to the character of police violence against the civilian population [@Zimring2017]. In June of 2020, about 15 to 26 million people in the U.S. participated in Black Lives Matter demonstrations, making it the largest movement in U.S. history [@Buchanan2020]. However, the lack of national level data on officer involved fatal encounters limits the scope for scientists' and researchers' to empirically address the shortcomings of policing on a national scale [@Swaine2015; @Nix2017]. @Zimring2017 characterized it as a "civil rights crisis" leading to "a statistical and public policy mystery."
+
+\newpage
+
+# Literature Review
+
+## Disciplines
+
+\doublespacing The disciplines of the literature on the subject of policing can be categorized into roughly three sections: social psychology, law and criminology, and sociology. Unsurprisingly, the literature is often intertwined in various scopes. Moreover, in recent times, as data on police use of force become widely available, the subject draws the attention of statisticians, economists, journalists, and other researchers from a variety of fields.
+
+## Scopes
+
+\doublespacing Despite the common interest across disciplines in inquiring about the patterns of policing and its outcomes, studies in recent times have a growing interest in assessing the presence and extent of racial bias in policing. This class of studies investigates the outcomes of fatal police force to uncover whether there are racial disparities in the use of fatal force by police. Yet, some studies have been invested in assessing the fatal risk involved in law enforcement as a profession. Another class of studies investigates how the use of force varies between states, counties, departments, size, and type of constituency, and firearm prevalence. Despite the lack of adequate data on law enforcement officials involved in fatal encounters with civilians, studies have also been interested to inquire how officer characteristics are related to the outcomes of fatal encounters.
+
+## Overview
+
+\doublespacing Scholars have maintained a steady interest in studying the exposure of fatal force to different social groups. @Edwards2019 studies age-specific odds of getting killed by police use of force across race and sex. They estimate that compared to their white peers, African American men and women, American Indian/Alaska Native men and women, and Latino men face a higher lifetime risk of being killed by police. They argue that racially unequal exposure to the risk of state-sanctioned violence profoundly affects public health, democracy, and racial stratification. Some scholars have utilized independently sourced databases to provide evidence of systemic racism in police killings across the U.S. @DeAngelis2021 utilized the Mapping Police Violence Database [@Sinyangwe2021] to document racial disparity in police killings across U.S. population. The study finds that relative to the general U.S. population, Black civilians were over represented in police killings, compared to their white peers. The author argued that despite posing greater imminent threat (e.g. signs of mental illness, armed status) to the safety of the police officers, white civilians are less likely to be killed by police compared to their Black peers, relative to the U.S. population [@DeAngelis2021]. @Tregle2019 casts a reasonable skepticism on using population as a benchmark for measuring racial bias. The study argues that using population as a benchmark for measuring racial bias falsely assumes that everyone in the population has the same likelihood of coming in contact with police in violent encounters. They further argue that violent criminal activity and weapons offenses (arguably the most dangerous arrest scenarios) act as a even better benchmark. Experimental studies in social psychology, however, are keener to ask whether officers involved in fatal shootings show implicit bias in their decisions to shoot at civilians. @Correll2002 investigates how social stereotype may function as a factor that aids to clarify ambiguous situations such as violent encounters that may lead to racial disparity in officer-involved shootings. They use a simple video game comprised of a series of complex background and target images to investigate the effect of the target's ethnicity on the participant's decision to shoot or not shoot a potentially dangerous suspect. The authors of the study argue that cultural stereotypes (e.g. characterizing African Americans as violent) may influence shooter's decision to shoot the target. 
+
+
+\newpage
+
+# Data Sources
+
+## Uniform Crime Reports (UCR)
+
+One of the key limitations faced by scholars in the subject is the lack of reliable and comprehensive national database documenting police killings [@Nix2017]. The Federal Bureau of Investigation (FBI) collects data on justifiable homicides\footnote{the killing of a felon by a law enforcement officer in the line of duty} through the Uniform Crime Reports (UCR) program. However, the reporting is voluntary and not all agencies participate in the program. In 2015, after months of protests following the killing Eric Garner and Tamir Rice in the previous year, The Guardian reported that none of the victims' names were on the UCR database. Of 18,000 law enforcement agencies around the US only 224 agencies reported a fatal shooting by their officers to the FBI's UCR database in 2014 [@Swaine2015]. The then FBI director James B. Comey called the lack of accurate information about police-involved shootings ‘ridiculous,’ ‘embarrassing’ [@Davis2015]. Studies have found that FBI and National Vital Statistics System (NVSS) undercounts the number of citizens killed at the hands of police by almost half than the original number [@Klinger2016]. Despite its proven lacking in providing accurate information on officer involved shootings, there are some potential use of UCR database. I use the use UCR database for collecting data on the following fields:
+
+### National Incident-Based Reporting System (NIBRS) 
+
+Implemented to improve the overall quality of crime data collected by law enforcement, NIBRS captures details on each single crime incident—as well as on separate offenses within the same incident—including information on victims, known offenders, relationships between victims and offenders, arrestees, and property involved in crimes. Unlike data reported through the UCR Program’s traditional Summary Reporting System (SRS)—an aggregate monthly tally of crimes—NIBRS goes much deeper because of its ability to provide circumstances and context for crimes like location, time of day, and whether the incident was cleared. 
+
+
+
+### Law Enforcement Officers Killed and Assaulted (LEOKA) 
+
+For testing the hypothesis of @Maskaly2015, this database can turn out to be extremely useful. @Maskaly2015 argue that policing practices or patterns of use of force is often affected by incidents of assaults and homicide of law enforcement officers. We aim to see how death/injury of officers influence police use of force. See table \@ref(tab:LEOkilled2013).
+
+\newpage
+
+### Crime in the United States 
+
+Our plan is to use violent crime and property crime data to see how it influences police decision to use force. Violent crime is composed of four offenses: murder and non-negligent manslaughter, rape, robbery, and aggravated assault. Property crime is composed of Burglary, Larceny - theft,	Motor vehicle - theft, Arson. See Table \@ref(tab:offense2013)
+
+
+
+## Fatal Encounters: National Officer-Involved Homicide Database
+
+Our study, like many others, utilize crowd sourced databases for data on officer-involved shootings and other use-of-force incidents resulting in civilian deaths. National Officer-Involved Homicide Database is an initiative by Center for Economic and Social Research (CESR) with support from University of Southern California. 
+
+
+## Mapping Police Violence Database
+
+We are primarily interested to use this database for our analysis. The database contains information on the involved police department and counts off-duty police killings. 
+
+## National Police Shooting Database
+
+The Washington Post's database contains records of every fatal shooting in the United States by a police officer in the line of duty since Jan. 1, 2015. In 2015, The Post began tracking more than a dozen details about each killing — including the race of the deceased, the circumstances of the shooting, whether the person was armed and whether the person was experiencing a mental-health crisis — by culling local news reports, law enforcement websites and social media, and by monitoring independent databases such as Killed by Police and Fatal Encounters. The Post conducted additional reporting in many cases. One of the lacking of the posts data collection is that it does not record police shooting by off-duty police officers [@Sinyangwe2021]. 
+
+```{r wapoData, echo=FALSE, warning=FALSE, fig.width = 5, fig.height = 3, fig.align = "center"}
+
+#wapo's per year data
+wapoPerYear <- wapoData %>% group_by(year) %>% summarise(`Total Deaths Per Year` = n())
+#because wapo started collecting data from 2015
+wapoPerYear <- add_row(wapoPerYear, year = 2013, `Total Deaths Per Year` = 0, .before = 1)
+wapoPerYear <- add_row(wapoPerYear, year = 2014, `Total Deaths Per Year` = 0, .before = 2)
+
+##differences across sources
+wapoPerYear$source = "wapo"
+mpvPeryear$source = "mpv"
+
+#for creating the plot
+mergedDataWapo_MPV <- rbind(wapoPerYear, mpvPeryear)
+mergedDataWapo_MPV %>% group_by(source) %>%  ggplot(aes(x = year, y = `Total Deaths Per Year`, colour = source, group = source)) + geom_point() + geom_line() + scale_x_discrete(limit = 2013:2022) + labs( title= "Differences in death counts between sources", x = "Year")
+
+```
+
+
+# Discussion
+
+With the given data in our hands, there are a few things we can and cannot do. Firstly, our study (as we know it now) does very less to analyse the general trends of policing in the U.S. We instead concern ourselves with a subset of policing: the use of Fatal force. and We cannot, not through numbers presented to us, determine if bias within individual officers was the single driving force behind the racial disparities uncovered. Secondly, given the diversity of 17,985 police agencies in the U.S., spread across with a variety of law enforcement regulations, constituency size, crime rates, it is difficult to produce results that generalize to states or the nation in general. Therefore, national-level studies might offer less precision and suffer \textbf{aggregation bias} [@Tregle2019]. @Klinger2016 point out from the analysis of police shootings over a 10-year period that 208 out of 355 census block groups blocks (58.6%) did not experience a single police shooting. This leads to lack of precision because it masks heterogeneity with in much smaller units of analysis, such as cities or census blocks. Hence any attempt to nationally aggregated analysis might not produce much useful results.
+
+## What contributes to the police use of force?
+
+@Lim2014 identify a few factors that likely contribute to police use of force: Individual (e.g., officer and citizen characteristics), situation (e.g., event that brought the police and citizens together), organization (e.g., agency policy), and neighborhood (e.g., crime rates). @Maskaly2015 speaks of mortality salience primes: mortality salience prime likely makes the officers hold to their authoritarian and aggressive worldview taught through, and reinforced by, the police subculture. Simultaneously, it validates the assumption that the public is dangerous and out to kill or injure law enforcement, and, thus cannot be trusted. Information about officer death/injury could serve as a mortality salience prime, which increases the officers’perceptions and general paranoia of armed suspects. @Correll2002 argues that cultural stereotypes (e.g. characterizing African Americans as violent) may influence shooter's decision to shoot the target. They explain that in a potentially dangerous scene, they use social stereotypes to "ease" the ambiguity. To me, it seems potentially flawed if we are to account for individual officers, because we don't have data available to infer about individual officers. It's been proved well by @Knox2020. In that case our best shot will be to try and evaluate tactical level police decision making which are affected by situation influences [@Lim2014]. An interesting way to look at it would be to compare two neighborhoods with same level and intensity of crimes, but how the same police department reacts differently. @Lim2014 indicates that race of an area might have more impact than race of the citizen and situational characteristics influence more than individual characteristics. 
+
+
+## Police homicide vs police use of force
+
+@Klinger2016 argues that death at the hands of the police is not a sound operationalization of the concept “police use of deadly force." The study argues that (1) police miss most shots i.e. successfully hit minority of targets [@Klinger2012] (2) most gunfire wounds are non-fatal i.e. a minority of gunfire are fatal. I am interested to find the distribution of overall shootings with an intent to kill from the subset of shootings that end up being fatal. This can be roughly done with the measure of violent crimes (often leading to use of force). For a homicide sample big enough, the number of violent crimes (presumably proportional to the number of firearm discharge by the police) should give us a breakdown of racial distribution of the total firearm discharge by police. 
+
+
+\newpage
+
+# Appendix
+
+## Definitions
+
+Justifiable Homicide:
+: The killing of a felon by a law enforcement officer in the line of duty.
+
+Uniform Crime Reports:
+: The Uniform Crime Reporting (UCR) Program generates statistics for use in law enforcement. Crime statistics are compiled from UCR data and published annually by the Federal Bureau of Investigation (FBI) in the Crime in the United States series. The FBI does not collect the data itself. Rather, law enforcement agencies across the United States provide the data to the FBI, which then compiles the Reports. It collects data in six divisions: Crime in the United States, National Incident-Based Reporting System (NIBRS), Law Enforcement Officers Killed and Assaulted (LEOKA), Hate Crime Statistics, National Use-of-Force Data Collection, Topical Crime Reports. 
+
+
+\newpage
+
+
+## Tables
+
+
+\center
+```{r offense2013, message=FALSE, echo=FALSE, warning=FALSE}
+
+sampleOffense2013 <- slice_sample(offenses2013, n = 10)
+#making the table 
+knitr::kable(sampleOffense2013, caption = "Violent Crime and Property Crime, 2013") %>% kable_styling(latex_options = "HOLD_position") %>%   kable_styling(latex_options = "striped") %>%  kable_styling(full_width = F) %>% kable_styling(font_size = 8) %>% footnote("Uniform Crime Report: Crime in the United States, 2013")
+
+```
+
+```{r LEOkilled2013, echo=FALSE}
+
+#making the table 
+knitr::kable(LEOKilled2013, caption = "Law Enforcement Officers Killed in 2013")  %>%   kable_styling(latex_options = "striped") %>% kable_styling(font_size = 10) %>% row_spec(0, bold = TRUE) %>% footnote("Source: Uniform Crime Report: Law Enforcement Officers Killed and Assaulted, 2013")
+
+```
+
+```{r agency_specific_Data, message=FALSE, echo=FALSE, warning=FALSE}
+
+mpvData$`Responsible Agency` = mpvData$agency_responsible
+
+#agency data aggregated over year
+agencyData <- mpvData %>% group_by(year, `Responsible Agency`) %>% summarise("Deaths per agency per year" = n(), .groups = "drop_last") %>%  pivot_wider(id_cols = `Responsible Agency`, names_from = year, values_from = `Deaths per agency per year`, values_fill = 0) 
+
+#creating an additional column for sorting
+agencyDataT <- agencyData %>% mutate(`Total civilian deaths` = rowSums(agencyData[,2:11]))
+
+#data frame containing the top 150 departments ranked by number of civilian deaths
+shorterAgencyData <- tail(agencyDataT %>% arrange(`Total civilian deaths`), n = 30) 
+```
+
+```{r agencyTable, echo=FALSE}
+
+#making the table 
+knitr::kable(shorterAgencyData, caption = "Civilian Deaths by agency per year, United States") %>% landscape() %>% row_spec(0, bold = TRUE) %>%   kable_styling(latex_options = "striped") %>% kable_styling(latex_options = "scale_down") %>% footnote(c("Source: Mapping Police Violence (Sinyangwe et al., 2021).", "The table is a sample of 30 out of 3256 agencies responsible for civilian death"))
+```
+
+
+\newpage
+
+\flushleft
+
+## Codes
+
+
+\singlespacing
+
+```{r ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+
+```
+
+\newpage
+
+# References {.unnumbered}
+
+\singlespacing
+
+::: {#refs}
+:::

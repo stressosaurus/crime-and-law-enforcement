@@ -1,0 +1,38 @@
+---
+title: "SJRE Internship Reflections"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Supervisor:** Alex John Quijano \
+**Intern:** Sajid Bin Mahamud
+
+### Project Description
+
+Title: Examining Racial Disparities in Law Enforcement Use of Force
+
+To determine the existence and severity of racial bias in the United States, this study analyzes data from around the country on police use of fatal force. The Mapping Violence database of Campaign Zero and public crime statistics are used in our research. This research examines the relationships between race and ethnicity and implicit racial bias in police-involved civilian deaths using contemporary data science methodologies.
+
+The final research question for this project was "Does the Racial and Social demography of the local population influence the use of lethal force by police departments in California?" 
+
+Our objectives was the following:
+
+1. Apply appropriate data wrangling and visualization tools on the given data set.
+2. Apply appropriate data exploratory analysis, statistical models, and data science algorithms.
+3. Integrate relevant domain knowledge for aiding the analysis and communicate results effectively.
+
+### Completion of the Project Tasks
+
+The student was able to complete the majority of assigned tasks and expectations as detailed in the project time-line. Below are the highlights:
+
+1. The background research and coming up with a coherent research question and hypothesis was successfully done. 
+2. The data wrangling and processing was successfully done as well. 
+3. The student was able to make a final research poster titled "Do Police Kill More People In Poorer and Highly Segregated Regions in California?". They presented it during the Reed College Undergraduate Research Poster Symposium.
+4. Even though a final report is expected at the end of the internship, the final report was not fully completed and it still work in progress. This project will continue in the Fall of 2022 and Spring 2023 where we will focus on documenting the the project and writing a final report.
+
+### Student Growth
+
+The student has shown a tremendous growth on how to properly wrangle data sets. The student also shown growth on how to use R and R studio to document their codes and write about there observations and analysis.

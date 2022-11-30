@@ -1,0 +1,509 @@
+---
+title: "An Analysis of The Use of Fatal Force by U.S. Law Enforcement Agencies"
+subtitle: "Summer 2022 Research: Report 3"
+author: "Sajid Bin Mahamud"
+header-includes:
+    - \usepackage{setspace}
+output:
+  bookdown::pdf_document2: 
+    number_sections: true
+    toc: true
+  bookdown::html_notebook2: 
+    number_sections: true
+urlcolor: blue 
+bibliography: references.bib
+nocite: '@*'
+csl: apa.csl
+link-citations: yes
+linkcolor: blue
+---
+
+```{r settings and uploading data, echo=FALSE, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(dplyr)
+library(kableExtra)
+library(kableExtra)
+library(fbi) 
+library(tidyverse)
+library(lubridate)
+library(tidycensus)
+
+# uploading data ----
+#interest area based on data availability and political leans 
+tx_mpv <- read_csv("Data/texas_OIS_2013-2021.csv")
+ca_mpv <- read_csv("Data/california_OIS_2013-2021(aug3).csv")
+census_api <- "c78372ea06d4d5a4db572bbef0da87250061f14f"
+#census_api_key(census_api, install = TRUE)
+
+# departments of CA
+LEAIC <- read_csv("Data/LEAcrosswalk_CA.csv")
+# okle data for CA
+okle2012_19_CA <- read_csv("Data/okle12-19_CA.csv")
+# uncomment before using 
+# okle2012_19 <- read_csv("Data/okle12-19.csv")
+# leoka data 
+
+CA13_20 <- read_csv("Data/leokaCA12-13.csv")
+```
+
+```{r acs census data, echo=FALSE, include=FALSE, show_col_types = FALSE}
+
+#see what we can get from the variables in census
+v18 <- load_variables(2018, "acs5", cache = TRUE)
+
+ca_place_detailed <- get_acs(geography = "place", 
+                        variables = c(Total ="B03002_001",
+                                      White = "B03002_003",
+                            Af_American = "B03002_004", 
+                            A_Indian_A_Native = "B03002_005",
+                            Asian = "B03002_006", 
+                            P_Islander_N_Hawaiian = "B03002_007", 
+                            Other = "B03002_008", 
+                            Hispanic = "B03002_012", 
+                            Below_Poverty = "B05010_002"),
+              state = "CA", 
+              year = 2018)
+
+
+
+# un-tidying ca_place_FIPS
+
+ca_place <- ca_place_detailed %>% 
+  pivot_wider(names_from = variable, values_from = c(estimate, moe))
+
+```
+
+
+\newpage
+
+*Last Update: `r format(Sys.time(), '%B %d, %Y')`*
+
+# Research Question
+
+# Data Sources 
+
+## Mapping Police Violence
+
+Before using the data, we manually corrected the following information (the corresponding details were either missing or incorrect).
+
+* Richard Sean Lugo, 36: shot and killed by deputies of Los Angeles County Sheriff's Department. Barry prak, 27 was originally shot and killed by a police officer from Long Beach Police Department.  Lorenzo Cesar Aguilar, 23 was shot and killed by officer from Azusa Police department. Dennis Hakeen Vasquez, 17 was shot and killed by an officer from Los Angeles County Sheriff's Department. Patrick Othro Sullivan, 70, was killed. Kenneth Bernard Williams, 55, was shot and killed by an officer of LAPD. Edgar Villareal, 25, was shot and killed by an officer of LASD.
+
+
+### Confusing Instances
+
+* How do we treat the case of Luis Chavez-Diaz who was shot in by California Department of Fish and Wildlife. 
+
+* How do we treat highway patrol. 
+
+## Offenses Known and Clearances by Arrest
+
+Conventionally, homicide, rape, robbery, burglary, aggravated assault, burglary, motor vehicle theft, and arson is considered to be index crimes. Arson is considered an index crime but is not reported in this data. These index crimes are often divided into violent index crimes - murder, rape, robbery, and aggravated assault, and property index crimes - burglary, theft, motor vehicle theft.
+
+We use the crime categories as time-variant variables:
+
+### Property Crimes:
+
+Burglary : The unlawful entry of a structure to commit a felony or a theft.
+Larceny-Theft : The unlawful taking of property from the possession of another (excluding motor vehicles).
+Vehicle Theft : The theft or attempted theft of a motor vehicle.
+
+### Violent Crimes:
+
+Homicide : The willful (non-negligent) killing of one human being by another.
+Rape : All forms of non-consensual sexual penetration.
+Armed Robbery : The taking or attempting to take anything of value from a person(s) by force or threat of violence.
+Aggravated Assault : An attack by one person upon another for the purpose of inflicting severe or aggravated bodily injury.
+
+# Method
+
+
+
+## Stage One Data
+
+The stage one merges OKLE (Offences Known to Law Enforcement) data and MPV Data. Since Arson has been a very recent addition to OKLE (since 2018), the first phase of the stage was to discard arson data from OKLE 2018 and 2019. We further narrowed down on our agencies of interest by looking at agencies which reported to the UCR for all 12 months. We then discard agencies without a 9-digit ori. The `agency_count` variable indicates whether the agency is counted on UCR (State and Park Police are usually not counted).
+
+Because we want to assess determinants of deadly force in specific geographic areas, we discard all instances where (1) more than one police department was involved, (2) department which doesn't have any specified mutually exclusive jurisdiction such as federal agencies like FBI and DEA. Therefore, we got rid of instances where more than one agency was involved or any federal agency was involved.  
+
+```{r stage 1, echo=FALSE, include=FALSE, show_col_types = FALSE}
+
+
+# no longer used -----
+# Offences Known to Law Enforcement data
+
+# discarded arson data from Offences Known to Law Enforcement 2018, 2019
+# we are interested in only California Agencies for now
+# we are further interested in agencies that did not miss any month
+# the table shows the number of instances where months were missed
+
+# count  Missing Number of Months Instances
+#1                        0       75720
+#2                        1          48
+#3                        2          24
+#4                        4          36
+#5                        6          24
+#6                        7          24
+#7                        8          36
+#8                        9          36
+#9                        10         24
+#10                       11         12
+#11                       12      11160
+
+# discard agencies without 9-dig ORI code, agency type (mostly tribal agencies)
+
+#[1] "american canyon"    "central marin"            "sycuan tribal"           
+#[4] "la jolla tribal"    "los coyotes tribal"       "coyote valley tribal"    
+#[7] "table mountain rancheria" "irvine valley college" "mt. san jacinto college" 
+#[10] "metropolitan state hospi" "blue lake tribal"  "clovis unified school di"
+#[13] "san pasqual band of miss"
+
+# agency count indicates 
+# whether the agency is actually counted (?) for example state and park police
+
+#okle2012_19_CA <- okle2012_19 %>% 
+# filter(state_abb == "CA", 
+#        number_of_months_missing == 0, 
+#        last_month_reported != "no months reported", 
+#         !is.na(ori9), !is.na(agency_type), agency_count == 1) %>% 
+# select(ori9, 
+#        crosswalk_agency_name, date, month, year, 
+#        fips_state_county_code, fips_place_code, agency_type, 
+#        census_name, population, population_group, 
+#        population_1, population_1_county, population_2, 
+#        population_2_county, population_3, population_3_county, 
+#         core_city_indication, zip_code, officers_killed_by_felony,
+#         officers_assaulted, actual_murder, actual_manslaughter, 
+#         actual_rape_total, actual_assault_aggravated, actual_assault_total,
+#         actual_index_violent, actual_robbery_total,  
+#         actual_burg_total, actual_theft_total, actual_mtr_veh_theft_total,
+#         actual_index_property, actual_index_total) %>% 
+#  rename(ori = ori9)
+
+# transforming date ----
+
+okle2012_19_CA$month = 
+  month(as.POSIXlt(okle2012_19_CA$date, format = "%Y-%m-%d"))
+
+# making a dummy variale for date both in mpv and okle
+# ReportDate: this will help match deaths per month
+
+ca_mpv$Rdate = paste("15", "-", ca_mpv$month, "-", ca_mpv$year)
+ca_mpv$Rdate = date(as.POSIXlt(ca_mpv$Rdate, 
+                                           format = "%d - %m - %Y"))
+
+okle2012_19_CA$Rdate = 
+  paste("15", "-", okle2012_19_CA$month, "-", okle2012_19_CA$year)
+okle2012_19_CA$Rdate = 
+  date(as.POSIXlt(okle2012_19_CA$Rdate, 
+                                           format = "%d - %m - %Y"))
+
+# removing instances of any Border patrol, federal agencies, more than----
+# one agency involvement, marine corps law enforcement, US marshals, DHS, ICE
+# total 94 cases 
+
+ca_mpv <- ca_mpv %>% filter(nchar(ori) == 9)
+
+# making the merge-able table for mpv ----
+
+test <- ca_mpv %>% group_by(ori, Rdate, race) %>% 
+  summarise(deathpermonth = n()) %>% 
+  select(ori, Rdate, race, deathpermonth)
+
+# making the race columns 
+
+test_wide <- test %>%  pivot_wider(names_from = race, 
+                                   values_from = deathpermonth,
+                                          values_fill = 0) %>% 
+  select(ori, Rdate, Black, Hispanic, 
+         `Unknown race`, Asian, White, 
+         `Native American`, `Pacific Islander`) %>% 
+  rename(OIS_Black = Black, 
+         OIS_Hispanic = Hispanic, 
+         OIS_Pacific_Islander = `Pacific Islander`,
+         OIS_Asian = Asian,
+         OIS_Native_American = `Native American`,
+         OIS_Unknown_race = `Unknown race`,
+         OIS_White = White)
+
+# merging and staging ----
+
+okle2012_19_CA <- okle2012_19_CA %>% rename(ori = ori9)
+
+StageOneData <- merge(okle2012_19_CA, test_wide, by = c("ori", "Rdate"), 
+                      all.x = TRUE)
+
+StageOneData[is.na(StageOneData)] <- 0
+
+StageOneData$date = NULL
+
+StageOneData$OISperMonth <- rowSums(StageOneData[,c(34:40)])
+
+
+
+
+```
+
+## Stage Two Data
+
+We got rid of special jurisdiction cases because in California alone there are 650 special jurisdictions. In 9 years there has been 10 observations. We got rid of the departments that don't report to the UCR. 
+
+```{r stage two, echo=FALSE, show_col_types = FALSE, warning = FALSE, include=FALSE}
+
+# making a dummy variable for date both in mpv and okle ----
+# Report Date: this will help match deaths per month
+
+
+
+CA13_20$month = 
+ month(as.POSIXlt(CA13_20$date, format = "%Y-%m-%d"))
+
+CA13_20$Rdate = paste("15", "-", CA13_20$month, "-", CA13_20$year)
+CA13_20$Rdate = date(as.POSIXlt(CA13_20$Rdate, 
+                                        format = "%d - %m - %Y"))
+
+#we only remain interested in agencies that reported for all 12 months ----
+# in a given year
+CA13_20 <- CA13_20 %>% filter(number_of_months_reported == 12) %>% select(-ori) 
+
+CA13_20$ori = CA13_20$ori9
+CA13_20$ori9 = NULL
+
+CA13_20 <- CA13_20 %>% 
+  select(c(2,3,4,8,9,23,24,26,27,28,29,30,35,36,37,40,43,255,256))
+
+#before staging, need to filter out agencies that did not report all 
+#years for 12 months
+
+CA13_20$year = year(as.POSIXlt(CA13_20$Rdate, format = "%Y-%m-%d"))
+
+#total number of months reported in 8 years (2013-2020)
+x <- CA13_20 %>% group_by(ori, year) %>% summarise(t_m = n())  %>% 
+  summarise(t_y = n()) 
+
+CA13_20 <- merge(CA13_20, x, by = c("ori"), all = TRUE)
+
+
+
+
+#adding (violent crime + OIS) to (officer population + population served)
+StageTwoData <- merge(StageOneData, CA13_20, by = 
+                        c("ori", "Rdate"), all.x = TRUE)
+#removing duplicates
+StageTwoData <- StageTwoData %>% select(-c(5,10)) %>% 
+  rename(year = year.y, population = population.y)
+
+
+
+StageTwoData <- StageTwoData %>% filter(year != "2012") %>% 
+  filter(year != "2020")  
+
+StageTwoData <- StageTwoData %>% filter(t_y == 8)
+
+```
+
+## Stage Three Data
+
+Claremont police department, LAPD did not report any employee data for 2019. So we went on further to remove any department which did not report for 2013 to 2019. 
+
+```{r stage three, echo=FALSE, include=FALSE, show_col_types = FALSE, warning = FALSE}
+
+LEAIC_CA <- LEAIC %>% filter(FSTATE == "(06) California") 
+
+# -1 indicates that the agency doesn't report to the UCR or NCIC
+
+LEAIC_CA <- LEAIC_CA %>% rename(ori = ORI9) %>% 
+  filter(as.character(ORI7) != "-1     ")
+
+StageThreeData <- merge(StageTwoData, LEAIC_CA, by = c("ori"))
+StageThreeData <-  StageThreeData %>% filter(as.character(ORI7) != "-1      ")
+
+# before stripping agencies who don't report
+
+# (000) Local police department        500
+# (001) Sheriff's office                66
+# (005) State law enforcement agency   102
+# (006) Special jurisdiction           650
+# (007) Constable/Marshal               59
+# (997) Federal                          1
+
+# after removing non-reporting agencies and the Federal agency 
+
+# (000) Local police department        487
+# (001) Sheriff's office                60
+# (005) State law enforcement agency    99
+# (006) Special jurisdiction           231
+# (007) Constable/Marshal                2
+
+#further removing agencies that did not report
+
+StageThreeData <- StageThreeData %>%
+  filter(REPORT_FLAG == "(1) ORI reported 1+ offenses")
+
+# (000) Local police department        470
+# (001) Sheriff's office                60
+# (005) State law enforcement agency    95
+# (006) Special jurisdiction           227
+# (007) Constable/Marshal                2
+
+# third staging data
+
+
+# we are not considering sheriffs dept, state law enforcement either 
+# getting rid of special jurisdiction: because doesn't a specific geography
+
+StageThreeData <- StageThreeData %>%
+  filter(AGCYTYPE != "(006) Special jurisdiction") %>%
+  filter(AGCYTYPE != "(001) Sheriff's office") %>% 
+  filter(AGCYTYPE != "(005) State law enforcement agency") 
+
+# we need to make a column matching the GEOID of ca_place
+# concatenate state and place FIPS, to create GEOID 
+
+StageThreeData$GEOID = 
+  paste(StageThreeData$fips_state_code, 
+        StageThreeData$fips_place_code, sep = "")
+
+# connecting ca_place to stage three ----
+
+StageThreeDatax <- merge(StageThreeData, ca_place, by= "GEOID", all.x = TRUE) 
+
+#removing columns and changing names
+
+StageThreeDatax <- StageThreeDatax %>% 
+  select(-c("population_group.y")) %>%
+  rename(population_group = population_group.x, 
+         NAME_L = NAME.x, NAME_C = NAME.y)
+
+StageThreeDatax <- StageThreeDatax %>% group_by(ori) %>% 
+  arrange(Rdate, .by_group = TRUE)
+
+# westmorland police department did not have 2019 data
+StageThreeDatax <- StageThreeDatax %>% filter(ori != "CA0130700")
+
+
+
+```
+
+## Stage Four Data
+
+### Data removal 
+
+Redding police department and Marshal's office redding share the same GEOID. 
+
+### UCR Population 
+
+U_TPOP is the UCR total population, as of 2012, served for records originating in the UCR program. Records without a valid ORI7 have U_TPOP coded -1. The UCR program includes the population served by the police agency. The UCR program receives population updates from the Census Bureau. For many records originating in the UCR program the U_TPOP will match exactly or be very close to the Census population (LG_POPULATION). However, for many other records originating in the UCR program the U_TPOP will differ substantially from the Census populatin. The reason is that the UCR program indicates population served by the law enforcement agency. The local government population is the population of the government entity. For example, county sheriffs often serve the county population that is not served by other (typically city or township) law enforcement agencies. Records for county sheriffs often show a U_TPOP that is substantially lower than the population shown for the local government (LG_POPULATION).
+The UCR program also has many records where U_TPOP is zero. The UCR program avoids double-counting populations by assigning zero population to some agencies and including the population with another agency. Examples of this are state police posts, college and university law enforcement, park, hospital, primary school law enforcement. All of these agencies will have U_TPOP = 0. Local law enforcement (cities, townships, etc.) will have population assigned to them.
+
+
+```{r stage four, echo=FALSE, include=FALSE, show_col_types = FALSE, warning = FALSE}
+
+# getting rid of agencies that did not report police data\
+# it's not possible to estimate police data, and not possible to discard 
+# the months when they did not report
+
+StageFourData <- StageThreeDatax %>% 
+  filter(record_indicator != "not updated, no police employee data")
+
+# removing the agencies with no local jurisdiction: LGPOPULATION == 888888888
+
+StageFourData <- StageFourData %>% group_by(ori) %>% mutate(t_m = n()) %>%
+  filter(t_m == 84) %>% select(-c(report_indicator, CONGDIST2_18, 
+                                  SOURCE_CSLLEA2008, SOURCE_UCR2010, 
+                                  SOURCE_UCR2011, SOURCE_UCR2012, 
+                                  SOURCE_VENDOR, COMMENT, CSLLEA08_ID, 
+                                  CSLLEA_SUB, LEMAS_ID, REPORT_FLAG, 
+                                  ADDRESS_CITY, ADDRESS_NAME, ADDRESS_STATE,
+                                  ADDRESS_STR2, ADDRESS_STR1, ADDRESS_ZIP, 
+                                  covered_by, month_indicator))
+
+StageFourData <- StageFourData %>% filter(LG_POPULATION != 888888888)
+
+# getting rid of LAKE SHASTINA POLICE DEPT 
+
+StageFourData <- StageFourData %>% filter(ori != "CA0471000")
+
+# los gatos pd is a part of a bigger agency
+# month indicator is from the LEOKA and we aren't using LEOKA variables as much
+# only the number of officers per Capita
+
+
+```
+
+
+## Stage Five Data
+
+We are now aggregating the data for each agency over the course of each year
+
+```{r stage five data, echo=FALSE, include=FALSE, show_col_types = FALSE, warning = FALSE }
+
+# crime rates
+StageFiveData <- StageFourData %>% group_by(ori, year) %>% 
+  mutate(property_crime_rate = ((mean(actual_index_property))/U_TPOP)*100000,
+         violent_crime_rate = ((mean(actual_index_violent))/U_TPOP)*100000, 
+         index_crime_rate = ((mean(actual_index_total))/U_TPOP)*100000)
+
+# rates of police 
+
+StageFiveData <- StageFiveData %>% 
+  mutate(police_rate =  (total_employees_officers /U_TPOP)*100000)
+
+
+```
+
+
+# Results 
+
+# Discussions
+
+## Situations where police are likely to use deadly force:
+
+This premise indicates that (1) police use deadly force uniformly across regions/places, (2) forgets to acknowledge that use of force is an instantaneous response. 
+
+# Limitations 
+
+The second milestone report was centered around the aim that LEOKA data shall allow us to investigate the impact of assaults and felonious killing of police officers on civilians killed by police, besides other widely studied factors. However, LEOKA is unreliable. 
+
+\newpage
+
+# Appendix
+
+## Definitions
+
+Justifiable Homicide:
+: The killing of a felon by a law enforcement officer in the line of duty.
+
+Uniform Crime Reports:
+: The Uniform Crime Reporting (UCR) Program generates statistics for use in law enforcement. Crime statistics are compiled from UCR data and published annually by the Federal Bureau of Investigation (FBI) in the Crime in the United States series. The FBI does not collect the data itself. Rather, law enforcement agencies across the United States provide the data to the FBI, which then compiles the Reports. It collects data in six divisions: Crime in the United States, National Incident-Based Reporting System (NIBRS), Law Enforcement Officers Killed and Assaulted (LEOKA), Hate Crime Statistics, National Use-of-Force Data Collection, Topical Crime Reports. 
+
+
+## Tables
+
+\center
+
+```{r }
+
+```
+
+
+\newpage
+
+\flushleft
+
+## Codes
+
+
+\singlespacing
+
+```{r ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+
+```
+
+\newpage
+
+# References {.unnumbered}
+
+\singlespacing
+
+::: {#refs}
+:::

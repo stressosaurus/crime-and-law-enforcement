@@ -1,0 +1,12 @@
+1. “Mapping Police Violence.” Mapping Police Violence, Campaign Zero, https://mappingpoliceviolence.org/
+   File: "Mapping Police Violence.csv" - recent original data download - 20220517 by Alex John Quijano
+
+2. “National Officer-Involved Homicide Database.” Fatal Encounters, Center for Economic and Social Research (CESR), University of Southern California, https://fatalencounters.org/
+   File: "FATAL ENCOUNTERS DOT ORG SPREADSHEET (See Read me tab) - Form Responses.csv" - recent original data download - 20220517 by Alex John Quijano
+
+3. Tate, Julie, et al. Washington Post Fatal Shooting Database. The Washington Post, https://github.com/washingtonpost/data-police-shootings.
+   File: "fatal-police-shootings-data.csv" - recent original data download - 20220520 by Alex John Quijano
+   
+4. FBI Crime Data. https://crime-data-explorer.fr.cloud.gov/pages/docApi, which includes the NIBRS (National Incident-Based Reporting System) - https://www.fbi.gov/services/cjis/ucr/nibrs 
+  API key: UQdRQU5cN0hitFUs5BNelClg2OS6Vywd5jqPEqaa obtained 6/3/2022 using aquijano@reed.edu email and
+DO2LFb5ShGocWjC8d1sjh0bBXawShdWkJrQ11xvF obtained 6/24/2022 using alexjohnquijano@gmail.com email.

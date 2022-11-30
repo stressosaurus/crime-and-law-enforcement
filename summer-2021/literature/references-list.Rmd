@@ -1,0 +1,30 @@
+---
+title: "References-List"
+author: "Sajid Bin Mahamud"
+date: "5/27/2022"
+output:
+  pdf_document: default
+  html_document: default
+urlcolor: blue
+bibliography: references.bib
+csl: apa.csl
+nocite: '@*'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\flushleft
+
+This document will be updated regularly.
+
+Updated: `r format(Sys.time(), '%B %d, %Y')`
+
+\flushleft
+
+
+
+## References {#ref}
+
+<div id="refs"></div>

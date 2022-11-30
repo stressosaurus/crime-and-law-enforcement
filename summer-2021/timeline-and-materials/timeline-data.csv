@@ -1,0 +1,11 @@
+event,group,start,end,color
+Literature Review,Writing,2022-05-20,2022-06-03,#f0f9e8
+Data & Methodology,Writing,2022-06-03,2022-07-01,#bae4bc
+Results & Discussion,Writing,2022-07-01,2022-07-15,#7bccc4
+Introduction & Conclusion,Writing,2022-07-15,2022-07-29,#2b8cbe
+Data Exploration,Data Science,2022-05-20,2022-06-17,#efedf5
+Statistical Modeling & Analysis,Data Science,2022-06-17,2022-07-08,#bcbddc
+Refinement & Evaluation,Data Science,2022-07-08,2022-07-29,#756bb1
+R1,Landmarks,2022-06-10,2022-06-17,#f7fcb9
+R2,Landmarks,2022-07-01,2022-07-08,#addd8e
+FR & P,Landmarks,2022-07-22,2022-07-29,#31a354
